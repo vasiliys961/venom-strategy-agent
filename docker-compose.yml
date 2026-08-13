@@ -1,0 +1,11 @@
+services:
+  venom-bot:
+    build: .
+    container_name: venom-strategy-agent
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DATABASE_PATH=/app/data/venom_canvas.db
+    restart: unless-stopped

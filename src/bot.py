@@ -3,6 +3,9 @@ Telegram-интерфейс ассистента (aiogram 3.x).
 Каждое сообщение пользователя прогоняется через узел текущего этапа
 VenomGraph; при завершении всех этапов бот собирает и отправляет
 финальный VENOM Canvas.
+
+LLM подключается через Polza.ai — российский агрегатор моделей с
+OpenAI-совместимым API (работает из РФ без VPN, оплата рублями).
 """
 import asyncio
 import os
@@ -18,12 +21,12 @@ from .storage import init_db, load_canvas, save_canvas
 load_dotenv()
 
 BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
-LLM_MODEL = os.getenv("LLM_MODEL", "anthropic/claude-3.7-sonnet")
+LLM_MODEL = os.getenv("LLM_MODEL", "anthropic/claude-sonnet-5")
 
 llm = ChatOpenAI(
     model=LLM_MODEL,
-    base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
-    api_key=os.getenv("OPENROUTER_API_KEY"),
+    base_url=os.getenv("POLZA_BASE_URL", "https://polza.ai/api/v1"),
+    api_key=os.getenv("POLZA_API_KEY"),
 )
 venom = VenomGraph(llm)
 
