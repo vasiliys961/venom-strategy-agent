@@ -2,6 +2,11 @@
 LangGraph-граф VENOM: пять узлов-этапов + reflection-роутер + сборка.
 Каждый узел вызывает LLM с соответствующим промптом и валидирует,
 что обязательные поля этапа заполнены, прежде чем перейти дальше.
+
+Если книга подключена (см. rag.py и ingest_book.py), перед каждым
+вызовом LLM подтягивается релевантный контекст из её текста — так
+ответы становятся точнее и опираются на реальный текст, а не только
+на общую структуру метода.
 """
 from __future__ import annotations
 
@@ -11,6 +16,7 @@ from langchain_core.messages import SystemMessage, HumanMessage
 
 from .state import VenomCanvas, SmartObjective
 from . import prompts
+from .rag import retrieve
 
 
 class VenomGraph:
@@ -19,8 +25,13 @@ class VenomGraph:
         self.graph = self._build()
 
     def _ask(self, system_prompt: str, user_input: str, schema_hint: str) -> dict:
+        book_context = retrieve(user_input) if user_input else ""
+        full_system_prompt = system_prompt
+        if book_context:
+            full_system_prompt = system_prompt + "\n\n" + book_context
+
         messages = [
-            SystemMessage(content=system_prompt + "\n\nОтветь СтрОгО в формате JSON: " + schema_hint),
+            SystemMessage(content=full_system_prompt + "\n\nОтветь СтрОгО в формате JSON: " + schema_hint),
             HumanMessage(content=user_input),
         ]
         resp = self.llm.invoke(messages)
@@ -99,6 +110,9 @@ class VenomGraph:
 
     def assembly_node(self, state: VenomCanvas) -> tuple[VenomCanvas, str]:
         prompt = prompts.ASSEMBLY_PROMPT.format(canvas_json=state.model_dump_json())
+        book_context = retrieve(state.desired_future or "")
+        if book_context:
+            prompt = prompt + "\n\n" + book_context
         resp = self.llm.invoke([SystemMessage(content=prompt)])
         state.stage = "done"
         return state, resp.content

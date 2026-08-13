@@ -4,3 +4,5 @@ __pycache__/
 *.db
 .venv/
 venom_agent.egg-info/
+data/book.*
+data/chroma/
