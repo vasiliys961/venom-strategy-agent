@@ -1,0 +1,8 @@
+langgraph>=0.2.0
+langchain-core>=0.3.0
+langchain-openai>=0.2.0
+pydantic>=2.7
+aiogram>=3.10
+aiosqlite>=0.20
+python-dotenv>=1.0
+reportlab>=4.2
